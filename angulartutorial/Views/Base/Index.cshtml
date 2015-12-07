@@ -1,0 +1,146 @@
+﻿@{
+	ViewBag.Title = "Suitcases!";
+}
+<html ng-app="myApp">
+<head>
+	<title>My Suitcase App</title>
+</head>
+<body ng-controller="baseController">
+	<h2>SuitCases</h2>
+
+	<ul class="nav">
+		<li><a href="#suitcases">Suitcase</a></li>		
+	</ul>
+
+	<section ui-view></section>
+	
+	<script type="text/javascript" src="/Scripts/angular.js"></script>
+	<script type="text/javascript" src="/Scripts/angular-ui-router.js"></script>
+	<script type="text/javascript" src="/Scripts/angular-resource.js"></script>
+	<script>
+
+		
+
+		var myApp = angular.module('myApp', ['ui.router', 'ngResource']);
+
+		///
+        /// config for router 
+        ///
+		myApp.config([
+			'$stateProvider', function ($stateProvider) {
+			    $stateProvider
+					.state('suitcases', {
+					    url: '/suitcases',
+					    templateUrl: 'suitcase/index',
+					    controller: 'suitcaseController'
+					})
+					.state('suitcases.add', {
+					    url: '/suitcase/add',
+					    templateUrl: 'suitcase/addSuitcase',
+					    controller: 'addSuitcaseController'
+					})
+					.state('suitcases.edit', {
+					    url: '/suitcase/edit/:id',
+					    templateUrl: 'suitcase/editSuitcase',
+					    controller: 'editSuitcaseController'
+					})
+                    .state('suitcases.delete', {
+                        url: '/suitcase/delete/:id',
+                        controller: 'deleteSuitcaseController'
+                    })
+					.state('suitcases.detail', {
+					    url: '/suitcase/:id',
+					    templateUrl: 'suitcase/detailSuitcase',
+					    controller: 'detailSuitcaseController'
+					});
+			}
+		]);
+		
+        ///
+        /// Main controller defined above
+        ///
+		angular.module('myApp').controller('baseController', function ($scope) {
+			
+		});
+
+        ////
+        /// The main suitcase controller. Loads the suitcases and adds the delete function to the suitcase scope
+        ///
+		angular.module('myApp').controller('suitcaseController', function($scope, $state, Entry) {
+
+		    $scope.loadEntries = function () {
+				var entries = Entry.query(function() {
+					console.log(entries);
+					$scope.suitcases = entries;
+				});
+			};
+
+			$scope.delete = function (suitcase) {
+			    var params = { id: suitcase.Id };
+			    suitcase.$delete(params, function () {
+			        $scope.loadEntries();
+			        $state.go('suitcases');
+			    });
+			};
+
+			$scope.loadEntries();
+		});
+
+        ///
+        /// Controller for showing details of a suitcase
+        ///
+		angular.module('myApp').controller('detailSuitcaseController', function ($scope, $stateParams, Entry) {
+			
+			var entry = Entry.get({ id: $stateParams.id }, function () {
+				$scope.suitcase = entry;
+			});
+		});
+
+        ///
+        /// Controller for editing the suitcase. Loads the selected suitcase in the template (loadSuitcase) and adds updateSuitcase to the editSuitcaseController scope
+        ///
+		angular.module('myApp').controller('editSuitcaseController', function ($scope, $state, $stateParams, Entry) {
+			
+			$scope.loadSuitcase = function() {
+				$scope.suitcase = Entry.get({id: $stateParams.id});
+			}
+			
+			$scope.updateSuitcase = function () {
+				console.log('update:', $scope.suitcase);
+				$scope.suitcase.$update(function () {
+					$scope.loadEntries();
+					$state.go('suitcases');
+				});
+			};
+			
+			$scope.loadSuitcase();
+		});
+        
+        ///
+        /// Controller for adding suitcases. Adds addSuitcase to the addSuitcaseController scope
+        ///
+		angular.module('myApp').controller('addSuitcaseController', function($scope, $state, $stateParams, Entry) {
+              
+		    $scope.addSuitcase = function () {
+		        console.log('add: ', $scope.suitcase);
+		        Entry.save($scope.suitcase, function () {
+		            $scope.loadEntries();
+					$state.go('suitcases');
+				});
+		    };
+		});
+
+		///
+        /// Factory for resource library
+		///
+		angular.module('myApp').factory('Entry', function ($resource) {
+
+		    return $resource(
+				"api/suitcaseapi/:id", { id: '@@id' },
+				{ "update": { method: "PUT" } }
+			);
+		});
+
+	</script>
+</body>
+</html>

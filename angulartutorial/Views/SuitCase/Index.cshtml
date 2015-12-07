@@ -1,0 +1,21 @@
+﻿
+<div>
+	<h2>SuitCases</h2>
+
+	<ul class="nav2">
+		<a ui-sref="suitcases.add">Add Suitcase</a>
+	</ul>
+
+
+	<div ng-repeat="suitcase in suitcases">
+		<a ui-sref="suitcases.detail({ id: suitcase.Id })">
+			{{suitcase.Id}}
+			{{suitcase.Locked}}
+			{{suitcase.Wheels}}
+		</a>
+	    <a ui-sref="suitcases.edit({id:suitcase.Id})">edit</a>
+        <a href="" ng-click="delete(suitcase)">delete</a>
+	</div>
+	
+	<section ui-view></section>
+</div>
